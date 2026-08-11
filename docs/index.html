@@ -58,6 +58,21 @@
 
     .slide.active { display: block; }
 
+    .slide.active {
+      animation: slideIn 420ms ease both;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.985);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
     .kicker {
       display: inline-flex;
       align-items: center;
@@ -177,6 +192,18 @@
       border: 1px solid var(--line);
       background: #fff;
       box-shadow: 0 10px 30px rgba(16, 35, 63, 0.08);
+      cursor: zoom-in;
+      transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .shot:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 40px rgba(16, 35, 63, 0.16);
+    }
+
+    .shot:focus-visible {
+      outline: 3px solid rgba(23, 105, 181, 0.45);
+      outline-offset: 4px;
     }
 
     .shot.large {
@@ -287,6 +314,49 @@
       box-shadow: 0 8px 30px rgba(16, 35, 63, 0.12);
     }
 
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      place-items: center;
+      padding: 34px;
+      background: rgba(8, 18, 32, 0.72);
+      backdrop-filter: blur(8px);
+    }
+
+    .lightbox.open {
+      display: grid;
+      animation: fadeIn 180ms ease both;
+    }
+
+    .lightbox img {
+      max-width: min(96vw, 1400px);
+      max-height: 88vh;
+      object-fit: contain;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      background: #fff;
+      box-shadow: 0 30px 90px rgba(0, 0, 0, 0.35);
+    }
+
+    .lightbox button {
+      position: absolute;
+      top: 20px;
+      right: 22px;
+      width: 42px;
+      height: 42px;
+      border-color: rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.92);
+      color: var(--ink);
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
     button {
       width: 38px;
       height: 34px;
@@ -378,7 +448,7 @@
           </ul>
         </div>
         <div>
-          <img class="shot large" src="assets/01-home.png" alt="網站首頁操作介面" />
+          <img class="shot large zoomable" src="assets/01-home.png" alt="網站首頁操作介面" tabindex="0" />
           <p class="caption">首頁畫面：左側上傳，右側集中語言、模型與語音狀態。</p>
         </div>
       </div>
@@ -389,7 +459,7 @@
       <h2>支援三種語言方向</h2>
       <div class="grid-2">
         <div>
-          <img class="shot" src="assets/02-language.png" alt="語言選單畫面" />
+          <img class="shot zoomable" src="assets/02-language.png" alt="語言選單畫面" tabindex="0" />
         </div>
         <div>
           <p class="lead">目前支援繁體中文、英文與泰文。原始語言與目標語言不可相同，語音語言會跟著目標語言檢查。</p>
@@ -429,7 +499,7 @@
           </ul>
         </div>
         <div>
-          <img class="shot" src="assets/03-model.png" alt="翻譯模型選單畫面" />
+          <img class="shot zoomable" src="assets/03-model.png" alt="翻譯模型選單畫面" tabindex="0" />
           <p class="caption">模型選單可在送出前切換，處理中會鎖定避免狀態不一致。</p>
         </div>
       </div>
@@ -462,7 +532,7 @@
       <h2>翻譯中畫面清楚顯示狀態</h2>
       <div class="grid-2">
         <div>
-          <img class="shot large" src="assets/04-progress.png" alt="翻譯進度畫面" />
+          <img class="shot large zoomable" src="assets/04-progress.png" alt="翻譯進度畫面" tabindex="0" />
         </div>
         <div>
           <p class="lead">使用者可以知道目前處理到哪個階段、哪一頁，以及是否仍可停止工作。</p>
@@ -489,7 +559,7 @@
           </ul>
         </div>
         <div>
-          <img class="shot" src="assets/05-complete.png" alt="完成下載畫面" />
+          <img class="shot zoomable" src="assets/05-complete.png" alt="完成下載畫面" tabindex="0" />
           <p class="caption">完成畫面會提示警告，例如本機 SAPI 語音品質取決於安裝的語音包。</p>
         </div>
       </div>
@@ -535,10 +605,19 @@
     <button type="button" id="next" aria-label="下一頁">›</button>
   </nav>
 
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="放大圖片">
+    <button type="button" id="closeLightbox" aria-label="關閉放大圖片">×</button>
+    <img id="lightboxImage" src="" alt="" />
+  </div>
+
   <script>
     const slides = Array.from(document.querySelectorAll(".slide"));
     const count = document.getElementById("count");
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImage = document.getElementById("lightboxImage");
+    const closeLightbox = document.getElementById("closeLightbox");
     let index = 0;
+    let lastFocusedImage = null;
 
     function show(nextIndex) {
       index = Math.max(0, Math.min(slides.length - 1, nextIndex));
@@ -553,6 +632,11 @@
     document.getElementById("next").addEventListener("click", () => show(index + 1));
 
     window.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && lightbox.classList.contains("open")) {
+        closeImage();
+        return;
+      }
+      if (lightbox.classList.contains("open")) return;
       if (["ArrowRight", "PageDown", " "].includes(event.key)) {
         event.preventDefault();
         show(index + 1);
@@ -567,6 +651,35 @@
 
     const initial = Number.parseInt(location.hash.replace("#", ""), 10);
     if (Number.isFinite(initial)) show(initial - 1);
+
+    function openImage(image) {
+      lastFocusedImage = image;
+      lightboxImage.src = image.src;
+      lightboxImage.alt = image.alt;
+      lightbox.classList.add("open");
+      closeLightbox.focus();
+    }
+
+    function closeImage() {
+      lightbox.classList.remove("open");
+      lightboxImage.src = "";
+      if (lastFocusedImage) lastFocusedImage.focus();
+    }
+
+    document.querySelectorAll(".zoomable").forEach((image) => {
+      image.addEventListener("click", () => openImage(image));
+      image.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          openImage(image);
+        }
+      });
+    });
+
+    closeLightbox.addEventListener("click", closeImage);
+    lightbox.addEventListener("click", (event) => {
+      if (event.target === lightbox) closeImage();
+    });
   </script>
 </body>
 </html>
