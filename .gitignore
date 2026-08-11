@@ -9,6 +9,7 @@ frontend/.next/
 frontend/.env.local
 .pnpm-store/
 .runtime-logs/
+voice-translation-html-slides/
 .agents/
 .codex/
 *.pyc
