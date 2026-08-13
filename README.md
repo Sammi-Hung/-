@@ -108,42 +108,6 @@ pytest
 cd frontend
 pnpm build
 ```
-
-## GitHub 發布注意事項
-
-請不要提交以下內容：
-
-- `backend/.env`
-- `frontend/.env.local`
-- `backend/storage/`
-- `backend/.tmp/`
-- `frontend/node_modules/`
-- `frontend/.next/`
-- `.runtime-logs/`
-- 公司內部 `.pptx`、輸出檔、語音檔與壓縮備份
-
-公開版 `.env.example` 只保留 placeholder。若要使用 Gemini、Ollama、Windows SAPI 或 PowerPoint COM，請在本機 `backend/.env` 自行設定。
-
-## 線上介紹簡報
-
-`docs/` 內是一份純 HTML 功能介紹簡報，可用 GitHub Pages 對外分享。
-
-GitHub Pages 設定方式：
-
-1. 將 repo 推到 GitHub。
-2. 到 GitHub repo 的 `Settings > Pages`。
-3. `Build and deployment` 選擇 `Deploy from a branch`。
-4. Branch 選 `main`，Folder 選 `/docs`。
-5. 儲存後等待 GitHub 產生網址。
-
-產生後的網址通常會像：
-
-```text
-https://你的帳號.github.io/你的repo名稱/
-```
-
-這個介紹簡報是靜態頁面，不需要後端、不需要 API key，也不需要你的電腦開著。
-
 ## 目前限制
 
 - 第一版同一時間只處理一個 PowerPoint 檔案。
